@@ -1,0 +1,10 @@
+#reciveDataSpace {
+    overflow: scroll;
+    height: 400px;
+}
+#divHeader {
+    background-color: #cccccc;
+}
+#reciveArea {
+    background-color: #fcfcfc;
+}
