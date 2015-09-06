@@ -1,0 +1,30 @@
+<div id="titles">
+  <h2>過去ログ画面</h2>
+</div>
+<div id="mainlink">
+  <a href="<%= mainUrl %>">メイン画面へ</a>
+</div>
+<% if strErr == "" %>
+<div id="inputarea">
+  <div id="prevlink">
+  <% if existPrev %>
+  <a href="<%= prevUrl %>">＜＜前の<%= splitCount %>件</a>
+  <% else %>
+  ＜＜前の<%= splitCount %>件
+  <% end %>
+  </div><div id="nextlink">
+  <% if existNext %>
+  <a href="<%= nextUrl %>">次の<%= splitCount %>件＞＞</a>
+  <% else %>
+  次の<%= splitCount %>件＞＞
+  <% end %>
+  </div>
+</div>
+<div id="logarea">
+  <%= logStr %>
+</div>
+<% else %>
+<div id="errarea">
+  <%= strErr %>
+</div>
+<% end %>

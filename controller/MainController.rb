@@ -11,6 +11,8 @@ class MainController
     username = session[HtmlUtil::LOGINNAME]
     showname = username + "(" + login + ")"
     userhash = CgiUser.getOnetimeHash(login)
+    histUrl = HtmlUtil.getHistoryUrl
+
     form = Pathname("view/Main.html.erb").read(:encoding => Encoding::UTF_8)
     return (ERB.new(form).result(binding)), false, ""
   end

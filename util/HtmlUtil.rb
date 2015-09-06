@@ -2,22 +2,17 @@
 # CGI Initialize class
 require 'date'
 require 'digest/sha2'
+require 'cgi'
 
 class HtmlUtil
   LOGINID = "loginid"
   LOGINNAME = "loginname"
   ISADMIN = "isAdmin"
 
-  TEMPPASS = "tempPass"
-  TEMPNAME = "tempName"
-  TEMPUID  = "tempUid"
-  TEMPINPUTERR = "tempInputErr"
-  TEMPINPUTFROM = "tempInputFrom"
-  TEMPINPUTTO = "tempInputTo"
-
   LoginCtrlName = "login"
   MenuCtrlName = "menu"
   MainCtrlName = "main"
+  HistoryCtrlName = "history"
 
   URLROOT = "/cgi"
 
@@ -86,11 +81,23 @@ class HtmlUtil
     return (createUrl MainCtrlName,"index")
   end
 
+  def self.getHistoryUrl
+    return (createUrl HistoryCtrlName,"index")
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
     ret += "/" + (arg.join("/")) unless arg == nil or arg.size < 1
     return ret
+  end
+
+  def self.esc(str)
+    return CGI.escapeHTML(str)
+  end
+
+  def self.unesc(str)
+    return CGI.unescapeHTML(str)
   end
 
   def self.getToday

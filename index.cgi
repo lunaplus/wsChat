@@ -69,6 +69,9 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::MainCtrlName
       require_relative './controller/MainController'
       ctrler = MainController.new
+    when HtmlUtil::HistoryCtrlName
+      require_relative './controller/HistoryController'
+      ctrler = HistoryController.new
 #############################################################################
     else # ログイン済でURLが不正な場合はメイン画面へ
       if !isRedirect

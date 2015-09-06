@@ -21,37 +21,48 @@ class ChatLog < ModelMaster
     end
   end
 
-  def self.getLogs(startseq, endseq)
+  def self.getLogCounts
+    retval = 0
+    retErr = ""
+    begin
+      mysqlClient = getMysqlClient
+      queryStr = <<-SQL
+        select count(*) as counts
+          from chatLogs
+      SQL
+      rsltset = mysqlClient.query(queryStr)
+      rsltset.each do |row|
+        retval = row["counts"].to_i
+      end
+    rescue Mysql2::Error => e
+      retErr = e.message
+    end
+    return retval, retErr
+  end
+
+  def self.getLogs(startseq, counts)
     retval = Array.new
     begin
-      if startseq.kind_of?(Integer) and endseq.kind_of?(Integer)
-        if startseq <= 0 or endseq <= 0
+      if startseq.kind_of?(Integer) and counts.kind_of?(Integer)
+        if startseq < 0 or counts <= 0
           err = Hash.new
           err[:err] = "正の整数を入力してください。(ゼロ不可)"
           retval.unshift(err)
         else
-          sseq = 0
-          eseq = 0
-          if startseq > endseq
-            sseq = endseq
-            eseq = startseq - endseq + 1
-          else
-            sseq = startseq
-            eseq = endseq - startseq + 1
-          end
           mysqlClient = getMysqlClient
-          sseqEsc = sseq.to_s
-          eseqEsc = eseq.to_s
+          sseqEsc = startseq.to_s
+          countsEsc = counts.to_s
           queryStr = <<-SQL
-            select uid, message, sentDate
-              from chatLogs
+            select cu.name, cl.message, cl.sentDate
+              from chatLogs cl
+              join cgiUsers cu on cl.uid = cu.uid
              order by sentDate desc
-             limit #{sseq}, #{eseq}
+             limit #{sseqEsc}, #{countsEsc}
           SQL
           rsltset = mysqlClient.query(queryStr)
           rsltset.each do |row|
             elm = Hash.new
-            elm[:uid] = row["uid"]
+            elm[:name] = row["name"]
             elm[:message] = row["message"]
             elm[:sentDate] = row["sentDate"]
             elm[:err] = ""
