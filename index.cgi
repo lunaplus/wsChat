@@ -4,7 +4,7 @@ ENV['GEM_HOME'] = '/Users/sanae/.rvm/gems/ruby-head@wsChat'
 
 require 'cgi'
 require 'cgi/session'
-equire_relative './util/HtmlUtil'
+require_relative './util/HtmlUtil'
 
 # == main ==========================================
 
@@ -27,7 +27,7 @@ pathinfo = ENV['PATH_INFO'] unless ENV['PATH_INFO'] == nil
 
 debugStr +=  pathinfo + "\n" if DEBUG
 
-pathelem = nil # path_info環境変数を/でsplitしたarray
+pathelem = [] # path_info環境変数を/でsplitしたarray
 if pathinfo != "" and pathinfo != "/"
  pathelem = pathinfo.split("/")
  pathelem.shift # 1要素目は必ず""になるため削除
@@ -66,14 +66,14 @@ else # 未ログインの場合はログイン画面へ飛ばす。
     when HtmlUtil::MenuCtrlName
       require_relative './controller/MenuController'
       ctrler = MenuController.new
-#    when HtmlUtil::PersonCtrlName
-#      require_relative './controller/PersonalController'
-#      ctrler = PersonalController.new
+    when HtmlUtil::MainCtrlName
+      require_relative './controller/MainController'
+      ctrler = MainController.new
 #############################################################################
-    else # ログイン済でURLが不正な場合はメニュー画面へ
+    else # ログイン済でURLが不正な場合はメイン画面へ
       if !isRedirect
         isRedirect = true
-        redirectLocation = HtmlUtil.getMenuUrl
+        redirectLocation = HtmlUtil.getMainUrl
       end
     end
   end

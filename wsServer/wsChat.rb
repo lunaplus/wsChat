@@ -2,22 +2,15 @@
 require 'rubygems'
 require 'em-websocket'
 require 'digest/sha2'
+require 'uri'
+require_relative '../util/HtmlUtil'
+require_relative '../model/CgiUser'
 
 # チャット用モジュール ユーザー管理を追加
 module ChatModule
-  # ログイン要求コマンド
-  CMD_LOGIN = "[CreateLoginUserCmd]"
-  CMD_RETURN_LOGIN_OK = "[CreateLoginUserCmd_OK]"
-  CMD_RETURN_LOGIN_NG = "[CreateLoginUserCmd_NG]"
   
   # ユーザー管理
   @@connected_clients = Hash.new
-
-  # 受信したメッセージがログイン要求かどうか
-  def loginMessage?(msg)
-    msgArray = msg.strip.split(":")
-    1 < msgArray.size && msgArray[0].include?(CMD_LOGIN)
-  end
 
   # 接続ユーザー全員にメッセージを送る
   def sendBroadcast(msg)
@@ -27,23 +20,18 @@ module ChatModule
   end
 
   # ログイン処理
-  def login(msg)
-    puts msg.strip
-    msgArray = msg.strip.split(":")
-    name = msgArray[1] rescue ""
-    if name != "" && @@connected_clients.has_key?(name) == false
-      # TODO: password check start ----------------------------------------
-      if false
-        send(CMD_RETURN_LOGIN_NG)
+  def login(login,userhash,username)
+    if CgiUser.checkOnetimeHash(login,userhash)
+      if @@connected_clients.has_key?(login) == false
+        @loginName = login
+        @@connected_clients[@loginName] = self
+        puts "Login name is #{@loginName}"
+        return true
+      else
+        return false
       end
-      # TODO: password check end   ----------------------------------------
-      @loginName = name
-      @@connected_clients[@loginName] = self
-      send(CMD_RETURN_LOGIN_OK + ":" + timenow)
-      puts "Login name is #{@loginName}"
-      sendBroadcast( "(" + timenow + ")Welcome [#{@loginName}] !")
     else
-      send(CMD_RETURN_LOGIN_NG)
+      return false
     end
   end
 
@@ -59,26 +47,24 @@ module ChatModule
   end
 end
 
-# 時刻を返す
-def timenow
-  return Time.now.strftime("%Y/%m/%d %H:%M:%S")
-end
-
 EM::WebSocket.start(:host => "localhost", :port => 3000) { |ws|
   ws.extend(ChatModule)
 
-  ws.onopen{
-    ws.send("Welcome! Please login!")
+  ws.onopen{ |hs|
+    loginid = URI.decode_www_form_component(hs.query["login"]) rescue ""
+    userhash = URI.decode_www_form_component(hs.query["userhash"]) rescue ""
+    username = URI.decode_www_form_component(hs.query["username"]) rescue ""
+    if ws.login(loginid,userhash,username)
+      ws.send("Welcome!")
+      ws.sendBroadcast( "(" + (HtmlUtil.fmtDateTime(HtmlUtil.getToday)) + ")Welcome [#{username}] !")
+    else
+      ws.close
+    end
   }
 
   ws.onmessage { |msg|
     return if msg.strip.size < 1
-
-    if ws.loginMessage?(msg)
-      ws.login(msg)
-    else
-      ws.sendBroadcast("(" + timenow + ")" + msg)
-    end
+    ws.sendBroadcast("(" + (HtmlUtil.fmtDateTime(HtmlUtil.getToday)) + ")" + msg)
   }
   
   ws.onclose{

@@ -3,6 +3,7 @@
 require_relative '../model/CgiUser'
 require_relative '../util/HtmlUtil'
 require 'erb'
+require 'pathname'
 
 class LoginController
   def index session,args
@@ -21,7 +22,7 @@ class LoginController
     if (isAuth)
       form = ""
       isRedirect = true
-      redirectLocation += "/menu"
+      redirectLocation += "/main"
       session[HtmlUtil::LOGINID] = uid
       session[HtmlUtil::LOGINNAME] = name
       session[HtmlUtil::ISADMIN] = isAdm
@@ -34,21 +35,7 @@ class LoginController
 
   def getLoginForm errMsg
     actionUrl = HtmlUtil.createUrl "login","auth"
-    form = <<-HTML
-  <p>
-    <h2>ログイン画面</h2>
-    <form action="<%= actionUrl %>" method="post" accept-charset="UTF-8"
-          autocomplete="off" name="login">
-      <input type="text" name="uid" size="10" maxlength="8" required><br>
-      <input type="password" name="password" size="10" autocomplete="off" required>
-      <br>
-      <input type="submit">
-    </form>
-  </p>
-  <% if errMsg %>
-  <p style='color: red'><%= errMsg %></p>
-  <% end %>
-HTML
+    form = Pathname("view/Login.html.erb").read(:encoding => Encoding::UTF_8)
     return (ERB.new(form).result(binding)), false, ""
   end
 

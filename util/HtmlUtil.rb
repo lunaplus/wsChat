@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # CGI Initialize class
 require 'date'
+require 'digest/sha2'
 
 class HtmlUtil
   LOGINID = "loginid"
@@ -16,6 +17,9 @@ class HtmlUtil
 
   LoginCtrlName = "login"
   MenuCtrlName = "menu"
+  MainCtrlName = "main"
+
+  URLROOT = "/cgi"
 
   def self.htmlHeader
     ret = <<-HTML
@@ -23,6 +27,7 @@ class HtmlUtil
 <html>
   <head>
     <meta charset-='UTF-8'>
+    <link rel="stylesheet" type="text/css" href="#{URLROOT}/css/wsChat.css">
   </head>
   <body>
     HTML
@@ -31,16 +36,6 @@ class HtmlUtil
 
   def self.initCgi
     return {"charset" => "UTF-8", "status" => "OK"}
-  end
-
-  def self.getJavascriptTags
-    jquerypath = getUrlRoot + "/js/jquery-2.1.1.min.js"
-    jspath = getUrlRoot + "/js/common.js"
-    ret = <<-HTML
-  <script type="text/javascript" src="#{jquerypath}"></script>
-  <script type="text/javascript" src="#{jspath}"></script>
-    HTML
-    return ret
   end
 
   def self.htmlFooter
@@ -69,6 +64,10 @@ class HtmlUtil
     return Digest::SHA256.hexdigest(s)
   end
 
+  def self.makeRandomDigest
+    return Digest::SHA256.hexdigest(Random.new(getToday().to_time.to_i).rand.to_s)
+  end
+
   def self.getUrlRoot
     if ENV['HTTPS'] == "on"
       urlRoot = "https://"
@@ -76,17 +75,56 @@ class HtmlUtil
       urlRoot = "http://"
     end
 
-    urlRoot += ENV['HTTP_HOST'] + "/cgi"
+    urlRoot += ENV['HTTP_HOST'] + URLROOT
   end
 
   def self.getMenuUrl
     return (createUrl MenuCtrlName,"index")
   end
 
+  def self.getMainUrl
+    return (createUrl MainCtrlName,"index")
+  end
+
   def self.createUrl ctrl,act="",arg=nil
     ret = getUrlRoot + "/" + ctrl
     ret += "/" + act unless act == ""
     ret += "/" + (arg.join("/")) unless arg == nil or arg.size < 1
+    return ret
+  end
+
+  def self.getToday
+    return DateTime.now
+  end
+
+  def self.fmtDateTime datetime
+    #return (datetime-Rational(9,24)).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.strftime("%Y-%m-%d %H:%M:%S")
+  end
+
+  def self.fmtDate date
+    return date.to_s
+  end
+
+  def self.parseDateTime date
+    return (date+Rational(9,24))
+    # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))
+  end
+
+  def self.parseDate str
+    return Date.parse(str, "%Y-%m-%d")
+  end
+end
+
+## ===================================================================
+# no use
+  def self.getJavascriptTags
+    jquerypath = getUrlRoot + "/js/jquery-2.1.1.min.js"
+    jspath = getUrlRoot + "/js/common.js"
+    ret = <<-HTML
+  <script type="text/javascript" src="#{jquerypath}"></script>
+  <script type="text/javascript" src="#{jspath}"></script>
+    HTML
     return ret
   end
 
@@ -146,29 +184,6 @@ class HtmlUtil
   def self.createDateTime y,m,d,h=0,mi=0,s=0
     return DateTime.new(y,m,d,h,mi,s,Rational(9,24))
   end
-
-  def self.getToday
-    return DateTime.now
-  end
-
-  def self.fmtDateTime datetime
-    #return (datetime-Rational(9,24)).strftime("%Y-%m-%d %H:%M:%S")
-    return datetime.strftime("%Y-%m-%d %H:%M:%S")
-  end
-
-  def self.fmtDate date
-    return date.to_s
-  end
-
-  def self.parseDateTime date
-    return (date+Rational(9,24))
-    # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))
-  end
-
-  def self.parseDate str
-    return Date.parse(str, "%Y-%m-%d")
-  end
-end
 
 class Integer
   def to_currency()

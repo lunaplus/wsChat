@@ -8,75 +8,42 @@ function reciveDataSpace(string) {
     element.insertBefore(p, element.firstChild);
 }
 
-function loginState(string) {
-    var element = document.getElementById("loginState");
-    element.innerHTML = "<p>" + string + "</p>";
+function sendMessage(){
+    var sendMsg = document.getElementById("message");
+    if(sendMsg.value == "") return;
+    
+    ws.send(sendMsg.value);
+    sendMsg.value = "";
 }
 
 function init() {
     Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
-    ws = new Socket("ws://localhost:3000/");
+
+    login = document.getElementById("login").value;
+    userhash = document.getElementById("userhash").value;
+    username = document.getElementById("username").value;
+
+    document.getElementById("buttonSend").disabled = true;
+
+    ws = new Socket("ws://localhost:3000/?login=" + login + "&userhash=" + userhash + "&username=" + username);
     
     ws.onmessage = function(evt) {
-        var splitData = evt.data.split(":");
-        if("[CreateLoginUserCmd_OK]" == splitData[0]){
-            splitData.shift();
-            loginState("login : " + splitData.join(":"));
-            changeloginState();
-        }
-        else if("[CreateLoginUserCmd_NG]" == evt.data){
-            loginState("The login name is already used. ");
-        }
-        else{
-            reciveDataSpace(evt.data); 
-        }
+        reciveDataSpace(evt.data); 
     };
     
-    ws.onclose = function() { reciveDataSpace("socket closed"); };
+    ws.onclose = function() {
+	reciveDataSpace("socket closed");
+	document.getElementById("buttonSend").disabled = true;
+    };
     
     ws.onopen = function() {
         reciveDataSpace("connected...");
-    }
+	document.getElementById("buttonSend").disabled = false;
+    };
 }
 
-function sendMessage(){
-    var sendMsg = document.getElementById("message");
-    var name = document.getElementById("loginName");
-    if(sendMsg.value == "") return;
-    if(name.value == "") return;
-    
-    ws.send("[" + name.value + "]:" + sendMsg.value);
-    sendMsg.value = "";
-}
-
-function sendLogin(){
-    loginState("");
-    var name = document.getElementById("loginName");
-    var pass = document.getElementById("loginPass");
-    if(name.value == "" || pass.value == "") {
-        loginState("Name/Password is empty.");
-        return;
-    }
-    // password hashing start -------------------------------------------
-    var salt = "foobarfoobar";
-    var sha = new jsSHA("SHA-512", "TEXT");
-    sha.update(pass.value + salt);
-    var shaDig = sha.getHash("HEX");
-
-    ws.send("[CreateLoginUserCmd]:" + name.value + ":" + shaDig);
-    // password hashing end   -------------------------------------------
-    pass.value = "";
-}
-
-function changeloginState(){
-    var name = document.getElementById("loginName");
-    if(name.value == "") return;
-    var login = document.getElementById("buttonLogin");
-    login.disabled = true;
-    var name = document.getElementById("loginName");
-    name.disabled = true;
-    var sendBtn = document.getElementById("buttonSend");
-    sendBtn.disabled = false;
-}
-
-window.onload = init();
+//window.onload = init();
+window.addEventListener("DOMContentLoaded", init, false);
+window.addEventListener("beforeunload", function (){
+    ws.close();
+}, false);

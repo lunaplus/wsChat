@@ -83,4 +83,46 @@ class CgiUser < ModelMaster
     end
   end
 
+  def self.getOnetimeHash(uid)
+    oth = HtmlUtil.makeRandomDigest
+    begin
+      mysqlClient = getMysqlClient
+      uidEscaped = mysqlClient.escape(uid)
+      queryStr = <<-SQL
+        update cgiUsers
+           set oneTimeHash = '#{oth}'
+         where uid = '#{uidEscaped}'
+      SQL
+      mysqlClient.query(queryStr)
+    rescue Mysql2::Error => e
+      return ""
+    end
+    return oth
+  end
+
+  def self.checkOnetimeHash(uid, oth)
+    retval = false
+    begin
+      mysqlClient = getMysqlClient
+      uidEscaped = mysqlClient.escape(uid)
+      othEscaped = mysqlClient.escape(oth)
+      queryStr = <<-SQL
+        select * from cgiUsers
+         where uid = '#{uidEscaped}' and oneTimeHash = '#{othEscaped}'
+      SQL
+      rsltSet = mysqlClient.query(queryStr)
+      if rsltSet.count != 0
+        upStr = <<-SQL
+          update cgiUsers
+             set oneTimeHash = null
+           where uid = '#{uidEscaped}'
+        SQL
+        mysqlClient.query(upStr)
+        retval =  true
+      end
+    rescue Mysql2::Error => e
+      retval = false
+    end
+    return retval
+  end
 end

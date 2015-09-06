@@ -1,4 +1,21 @@
-<p>
+<div id="titles">
   <h2>メイン画面</h2>
-  this is main!
-</p>
+  <div id ="welcome">
+    Welcome <%= showname %> !
+  </div>
+</div>
+<div id="chatarea">
+  <div id="inputarea">
+    送信メッセージ:
+    <INPUT TYPE="text"   id="message"  size="20" value="">
+    <INPUT TYPE="button" id="buttonSend"  VALUE="送信" onClick="sendMessage()">
+    <INPUT TYPE="hidden" id="login" value="<%= login %>">
+    <INPUT TYPE="hidden" id="userhash" value="<%= userhash %>">
+    <INPUT TYPE="hidden" id="username" value="<%= username %>">
+  </div>
+  <div id="reciveArea">
+    受信データ
+    <div id="reciveDataSpace"></div>
+  </div>
+</div>
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>chat.js'></script>
