@@ -5,6 +5,7 @@ require 'digest/sha2'
 require 'uri'
 require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
+require_relative '../model/ChatLog'
 
 # チャット用モジュール ユーザー管理を追加
 module ChatModule
@@ -15,8 +16,11 @@ module ChatModule
   # 接続ユーザー全員にメッセージを送る
   def sendBroadcast(msg)
     return if msg.empty?
-    @@connected_clients.each_value { |c| c.send(msg) }
-    puts msg
+    sendmsg = "(" + getDateText + ") " + msg
+    @@connected_clients.each_value { |c| c.send(sendmsg) }
+    puts sendmsg
+    isSucc, errmsg = ChatLog.insertLog(@loginName, msg)
+    puts errmsg unless isSucc
   end
 
   # ログイン処理
@@ -45,6 +49,10 @@ module ChatModule
     end
     puts "WebSocket closed"
   end
+
+  def getDateText
+    return HtmlUtil.fmtDateTime(HtmlUtil.getToday)
+  end
 end
 
 EM::WebSocket.start(:host => "localhost", :port => 3000) { |ws|
@@ -56,7 +64,7 @@ EM::WebSocket.start(:host => "localhost", :port => 3000) { |ws|
     username = URI.decode_www_form_component(hs.query["username"]) rescue ""
     if ws.login(loginid,userhash,username)
       ws.send("Welcome!")
-      ws.sendBroadcast( "(" + (HtmlUtil.fmtDateTime(HtmlUtil.getToday)) + ")Welcome [#{username}] !")
+      ws.sendBroadcast("Welcome [#{username}] !")
     else
       ws.close
     end
@@ -64,7 +72,7 @@ EM::WebSocket.start(:host => "localhost", :port => 3000) { |ws|
 
   ws.onmessage { |msg|
     return if msg.strip.size < 1
-    ws.sendBroadcast("(" + (HtmlUtil.fmtDateTime(HtmlUtil.getToday)) + ")" + msg)
+    ws.sendBroadcast(msg)
   }
   
   ws.onclose{
