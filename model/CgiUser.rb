@@ -18,7 +18,7 @@ class CgiUser < ModelMaster
       upnameEscaped = mysqlClient.escape(upname) unless upname == ""
       uppassEscaped = mysqlClient.escape(HtmlUtil.digestPassword uppass) unless uppass == ""
 
-      queryStr = "update cgiusers set"
+      queryStr = "update cgiUsers set"
       tmpArr = []
       tmpArr.push(" uid = '#{upuidEscaped}' ") unless upuid == ""
       tmpArr.push(" name = '#{upnameEscaped}' ") unless upname == ""
@@ -39,7 +39,7 @@ class CgiUser < ModelMaster
       uidEscaped = mysqlClient.escape(uid)
       queryStr = <<-QUERY
         select uid, name, isadmin
-        from cgiusers
+        from cgiUsers
         where uid = '#{uidEscaped}'
       QUERY
       rsltset = mysqlClient.query(queryStr)
@@ -64,7 +64,7 @@ class CgiUser < ModelMaster
       passEscaped = mysqlClient.escape(HtmlUtil.digestPassword pass)
       queryStr = <<-QUERY
         select uid, password, name, isadmin
-        from cgiusers
+        from cgiUsers
         where uid = '#{uidEscaped}' and password = '#{passEscaped}'
       QUERY
       rsltset = mysqlClient.query(queryStr)

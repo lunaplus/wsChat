@@ -113,6 +113,10 @@ class HtmlUtil
     return date.to_s
   end
 
+  def self.fmtTime datetime
+    return datetime.strftime("%H:%M:%S")
+  end
+
   def self.parseDateTime date
     return (date+Rational(9,24))
     # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))

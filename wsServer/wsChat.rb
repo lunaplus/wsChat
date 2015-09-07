@@ -16,7 +16,7 @@ module ChatModule
   # 接続ユーザー全員にメッセージを送る
   def sendBroadcast(msg)
     return if msg.empty?
-    sendmsg = "(" + getDateText + ") " + msg
+    sendmsg = "[" + @uname + "](" + getDateText + ") " + msg
     @@connected_clients.each_value { |c| c.send(sendmsg) }
     puts sendmsg
     isSucc, errmsg = ChatLog.insertLog(@loginName, msg)
@@ -28,6 +28,7 @@ module ChatModule
     if CgiUser.checkOnetimeHash(login,userhash)
       if @@connected_clients.has_key?(login) == false
         @loginName = login
+        @uname, tmpIsAdm = CgiUser.getUser(login)
         @@connected_clients[@loginName] = self
         puts "Login name is #{@loginName}"
         return true
@@ -42,7 +43,7 @@ module ChatModule
   #ログアウト処理
   def logout()
     if @loginName && @loginName.empty? == false
-      msg = "[#{@loginName}] is logout."
+      msg = "[#{@uname}] is logout."
       puts msg
       @@connected_clients.delete(@loginName)
       @@connected_clients.each_value { |c| c.send(msg) }
@@ -51,7 +52,7 @@ module ChatModule
   end
 
   def getDateText
-    return HtmlUtil.fmtDateTime(HtmlUtil.getToday)
+    return HtmlUtil.fmtTime(HtmlUtil.getToday)
   end
 end
 
