@@ -10,6 +10,8 @@ require_relative '../model/ChatLog'
 # ruby wsServer/wsChat.rb >>/path/to/app/log/wsChat.log 2>&1
 Process.daemon(nil, true)
 
+$stdout.sync = true
+
 # チャット用モジュール ユーザー管理を追加
 module ChatModule
   
