@@ -7,6 +7,9 @@ require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
 require_relative '../model/ChatLog'
 
+# ruby wsServer/wsChat.rb >>/path/to/app/log/wsChat.log 2>&1
+Process.daemon(nil, true)
+
 # チャット用モジュール ユーザー管理を追加
 module ChatModule
   
@@ -46,9 +49,9 @@ module ChatModule
       msg = "[#{@uname}] is logout."
       puts msg
       @@connected_clients.delete(@loginName)
-      @@connected_clients.each_value { |c| c.send(msg) }
+      sendBroadcast(msg);
     end
-    puts "WebSocket closed"
+    puts "WebSocket closed(" + @loginName + ")"
   end
 
   def getDateText
@@ -56,7 +59,7 @@ module ChatModule
   end
 end
 
-EM::WebSocket.start(:host => "localhost", :port => 3000) { |ws|
+EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
   ws.extend(ChatModule)
 
   ws.onopen{ |hs|

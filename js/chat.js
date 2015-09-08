@@ -3,7 +3,7 @@ var ws;
 
 function reciveDataSpace(string) {
     var element = document.getElementById("reciveDataSpace");
-    var p = document.createElement("p");
+    var p = document.createElement("li");
     p.appendChild(document.createTextNode(string));
     element.insertBefore(p, element.firstChild);
 }
@@ -14,10 +14,19 @@ function sendMessage(){
     
     ws.send(sendMsg.value);
     sendMsg.value = "";
+
+    sendMsg.focus();
+}
+
+function pressEnter(){
+    if (event.keyCode == 13){
+	sendMessage();
+    }
 }
 
 function init() {
-    Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+    document.getElementById("buttonSend").onclick = sendMessage;
+    document.getElementById("message").onkeydown = pressEnter;
 
     login = document.getElementById("login").value;
     userhash = document.getElementById("userhash").value;
@@ -25,7 +34,8 @@ function init() {
 
     document.getElementById("buttonSend").disabled = true;
 
-    ws = new Socket("ws://localhost:3000/?login=" + login + "&userhash=" + userhash + "&username=" + username);
+    Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
+    ws = new Socket("ws://localhost:23456/?login=" + login + "&userhash=" + userhash + "&username=" + username);
     
     ws.onmessage = function(evt) {
         reciveDataSpace(evt.data); 

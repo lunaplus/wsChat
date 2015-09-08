@@ -22,11 +22,11 @@ class MainController
         histHtml = HtmlUtil.esc(elm[:err])
         break
       end
-      histHtml += "<p>"
+      histHtml += "<li>"
       histHtml += "[" + HtmlUtil.esc(elm[:name].to_s) + "]"
       histHtml += "(" + HtmlUtil.fmtDateTime(elm[:sentDate]) + ")"
       histHtml += HtmlUtil.esc(elm[:message].to_s)
-      histHtml += "</p>"
+      histHtml += "</li>"
     end
 
     form = Pathname("view/Main.html.erb").read(:encoding => Encoding::UTF_8)

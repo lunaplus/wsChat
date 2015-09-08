@@ -8,7 +8,7 @@
   <div id="inputarea">
     送信メッセージ:
     <INPUT TYPE="text"   id="message"  size="20" value="">
-    <INPUT TYPE="button" id="buttonSend"  VALUE="送信" onClick="sendMessage()">
+    <INPUT TYPE="button" id="buttonSend"  VALUE="送信">
     <INPUT TYPE="hidden" id="login" value="<%= login %>">
     <INPUT TYPE="hidden" id="userhash" value="<%= userhash %>">
     <INPUT TYPE="hidden" id="username" value="<%= username %>">
@@ -16,9 +16,9 @@
   </div>
   <div id="reciveArea">
     受信データ
-    <div id="reciveDataSpace">
+    <ul id="reciveDataSpace">
       <%= histHtml %>
-    </div>
+    </ul>
   </div>
 </div>
 <script src='<%= HtmlUtil::URLROOT + "/js/" %>chat.js'></script>
