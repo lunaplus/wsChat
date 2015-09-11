@@ -4,15 +4,33 @@
     Welcome <%= showname %> !
   </div>
 </div>
+<div id="menuarea">
+  <a href="<%= histUrl %>">過去ログ画面へ</a>
+</div>
 <div id="chatarea">
+  <div id="loginarea">
+    ルーム選択
+    <div id="roomchoice">
+      <INPUT TYPE="radio" name="room" value="create">
+      <INPUT TYPE="text" id="newroom" size="20" maxlength="15" value="">
+      <INPUT TYPE="radio" name="room" value="login">
+      <select id="selectroom">
+	<%= roomSel %>
+      </select>
+    </div>
+    <div id="roompass">
+      ルームパスワード
+      <INPUT TYPE="password" id="roompwd" size="20" value="">
+    </div>
+    
+  </div>
   <div id="inputarea">
     送信メッセージ:
-    <INPUT TYPE="text"   id="message"  size="20" value="">
+    <INPUT TYPE="text"   id="message"  size="50" value="">
     <INPUT TYPE="button" id="buttonSend"  VALUE="送信">
     <INPUT TYPE="hidden" id="login" value="<%= login %>">
     <INPUT TYPE="hidden" id="userhash" value="<%= userhash %>">
     <INPUT TYPE="hidden" id="username" value="<%= username %>">
-    <a href="<%= histUrl %>">過去ログ画面へ</a>
   </div>
   <div id="reciveArea">
     受信データ

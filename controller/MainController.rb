@@ -14,8 +14,9 @@ class MainController
     userhash = CgiUser.getOnetimeHash(login)
     histUrl = HtmlUtil.getHistoryUrl
 
-    histArr = ChatLog.getLogs(0, 10)
-
+    # 過去ログ表示
+    initViewLogs = 10
+    histArr = ChatLog.getLogs(0, initViewLogs)
     histHtml = ""
     histArr.each do |elm|
       if elm[:err] != ""
@@ -28,6 +29,14 @@ class MainController
       histHtml += HtmlUtil.esc(elm[:message].to_s)
       histHtml += "</li>"
     end
+
+    # 既存ルーム一覧
+    # TODO: ルームモデル呼び出し
+    roomSel = <<-SEL
+      <option value="test1">テスト１</option>
+      <option value="test2">テスト２</option>
+      <option value="test3">テスト３</option>
+    SEL
 
     form = Pathname("view/Main.html.erb").read(:encoding => Encoding::UTF_8)
     return (ERB.new(form).result(binding)), false, ""
