@@ -7,10 +7,7 @@ require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
 require_relative '../model/ChatLog'
 
-# ruby wsServer/wsChat.rb >>/path/to/app/log/wsChat.log 2>&1
-Process.daemon(nil, true)
-
-$stdout.sync = true
+Process.daemon(true, true)
 
 # チャット用モジュール ユーザー管理を追加
 module ChatModule
@@ -18,42 +15,55 @@ module ChatModule
   # ユーザー管理
   @@connected_clients = Hash.new
 
+  # logging
+  @@logfile = File.open("log/wsChat.log", "a")
+  def outputLog str
+    @@logfile.sync = true
+    @@logfile.puts str
+  end
+
   # 接続ユーザー全員にメッセージを送る
   def sendBroadcast(msg)
     return if msg.empty?
     sendmsg = "[" + @uname + "](" + getDateText + ") " + msg
     @@connected_clients.each_value { |c| c.send(sendmsg) }
-    puts sendmsg
+    outputLog sendmsg
     isSucc, errmsg = ChatLog.insertLog(@loginName, msg)
-    puts errmsg unless isSucc
+    outputLog errmsg unless isSucc
   end
 
   # ログイン処理
-  def login(login,userhash,username)
+  def login(login,userhash,username,isnewroom,roomname,roompwd)
+    retval = false
+    retmsg = nil
     if CgiUser.checkOnetimeHash(login,userhash)
       if @@connected_clients.has_key?(login) == false
+        # ChatRoom.createRoom if isnewroom
+        # ChatRoom.loginRoom unless isnewroom
+
         @loginName = login
         @uname, tmpIsAdm = CgiUser.getUser(login)
         @@connected_clients[@loginName] = self
-        puts "Login name is #{@loginName}"
-        return true
+        outputLog "Login name is #{@loginName}"
+        retval = true
       else
-        return false
+        retmsg = "同IDで既にログインしている人がいます。"
       end
     else
-      return false
+      retmsg = "ワンタイムパスが一致しません。正しいURLからログインしてください。"
     end
+    return retval, retmsg
   end
 
   #ログアウト処理
   def logout()
     if @loginName && @loginName.empty? == false
       msg = "[#{@uname}] is logout."
-      puts msg
+      outputLog msg
       @@connected_clients.delete(@loginName)
       sendBroadcast(msg);
     end
-    puts "WebSocket closed(" + @loginName + ")"
+    outputLog ("WebSocket closed(" + (@loginName.nil? ? "":@loginName) + ")")
   end
 
   def getDateText
@@ -65,15 +75,22 @@ EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
   ws.extend(ChatModule)
 
   ws.onopen{ |hs|
+    # query string proc
     loginid = URI.decode_www_form_component(hs.query["login"]) rescue ""
     userhash = URI.decode_www_form_component(hs.query["userhash"]) rescue ""
     username = URI.decode_www_form_component(hs.query["username"]) rescue ""
-    if ws.login(loginid,userhash,username)
-      ws.send("Welcome!")
-      ws.sendBroadcast("Welcome [#{username}] !")
-    else
-      ws.close
-    end
+    isnewroom = (URI.decode_www_form_component(hs.query["newroom"]) == "true") rescue false
+    roomname = URI.decode_www_form_component(hs.query["roomname"]) rescue ""
+    roompwd = URI.decode_www_form_component(hs.query["roompwd"]) rescue ""
+
+    # login check
+    isLoginComplete, msg = ws.login(loginid,userhash,username,isnewroom,
+                                    roomname,roompwd)
+    msg = "Welcome!" if isLoginComplete
+
+    ws.send(msg)
+    ws.sendBroadcast("Welcome [#{username}] !") if isLoginComplete
+    ws.close unless isLoginComplete
   }
 
   ws.onmessage { |msg|
@@ -87,6 +104,6 @@ EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
   
   ws.onerror{ |e|
     ws.logout
-    puts "Error: #{e.message}"
+    outputLog "Error: #{e.message}"
   }
 }

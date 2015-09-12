@@ -26,53 +26,109 @@ function pressEnter(){
 
 function closeWebSocket(){
     ws.close();
+    location.reload();
 }
 
 function selectRadioRoom(){
-    if(this.value == "create"){
-	document.getElementById("newroom").disabled = false;
-	document.getElementById("selectroom").disabled = true;
+    modifyRoomItemsStatus(this.value=="create")
+}
+
+function modifyRoomItemsStatus(isCreate){
+    document.getElementById("newroom").disabled = !isCreate;
+    document.getElementById("selectroom").disabled = isCreate;
+}
+
+function changeLoginStatus(b){
+    // b==true  : login / b==false : logout
+
+    //login item
+    document.getElementById("newroom").disabled = b;
+    document.getElementById("selectroom").disabled = b;
+    var rdoroom = document.getElementsByName("room");
+    for(var i=0; i<rdoroom.length; i++){
+	rdoroom[i].disabled = b;
     }
-    else{
-	document.getElementById("newroom").disabled = true;
-	document.getElementById("selectroom").disabled = false;
-    }
+    document.getElementById("roompwd").disabled = b;
+    document.getElementById("roomlogin").disabled = b;
+
+    document.getElementById("roomlogout").disabled = !b;
+
+    //chat item
+    document.getElementById("message").disabled = !b;
+    document.getElementById("buttonSend").disabled = !b;
 }
 
 function init() {
+    // event register
     document.getElementById("buttonSend").onclick = sendMessage;
     document.getElementById("message").onkeydown = pressEnter;
+    document.getElementById("roomlogin").onclick = openWebSocket;
+    document.getElementById("roomlogout").onclick = closeWebSocket;
     var rdoroom = document.getElementsByName("room")
     for(var i=0; i<rdoroom.length; i++){
 	rdoroom[i].onclick = selectRadioRoom;
+	if(rdoroom[i].value == "create"){
+	    rdoroom[i].checked = "checked";
+	}
     }
 
-    login = document.getElementById("login").value;
-    userhash = document.getElementById("userhash").value;
-    username = document.getElementById("username").value;
-
-    document.getElementById("buttonSend").disabled = true;
-    openWebSocket();
+    changeLoginStatus(false);
+    modifyRoomItemsStatus(true);
 }
 
 function openWebSocket() {
-    ws = new Socket("ws://localhost:23456/?login=" + login + "&userhash=" + userhash + "&username=" + username);
-    
+    // value get
+    var login = document.getElementById("login").value;
+    var userhash = document.getElementById("userhash").value;
+    var username = document.getElementById("username").value;
+    var rdoroom = document.getElementsByName("room");
+    var isnewroom = false;
+    for(var i=0; i<rdoroom.length; i++){
+	if (rdoroom[i].checked){
+	    isnewroom = (rdoroom[i].value == "create");
+	}
+    }
+    var roomname = ""
+    if (isnewroom){
+	roomname = document.getElementById("newroom").value;
+    } else {
+	var tmpSel = document.getElementById("selectroom");
+	roomname = tmpSel.options[tmpSel.selectedIndex].value;
+    }
+    var roompwd = document.getElementById("roompwd").value;
+
+    // input check
+    if (roomname == ""){
+	errmsg = "";
+	if(isnewroom) errmsg = "ルーム名を入力してください。";
+	else errmsg = "ルームを選択してください。";
+	document.getElementById("errmsg").textContent = errmsg;
+	return;
+    }
+    document.getElementById("errmsg").textContent = "";
+
+    // websocket initialize
+    ws = new Socket("ws://localhost:23456/" +
+		    "?login=" + login +
+		    "&userhash=" + userhash +
+		    "&username=" + username +
+		    "&newroom=" + isnewroom +
+		    "&roomname=" + roomname +
+		    "&roompwd=" + roompwd
+		   );
     ws.onmessage = function(evt) {
         reciveDataSpace(evt.data); 
     };
-    
     ws.onclose = function() {
 	reciveDataSpace("socket closed");
-	document.getElementById("buttonSend").disabled = true;
+	changeLoginStatus(false);
     };
-    
     ws.onopen = function() {
         reciveDataSpace("connected...");
-	document.getElementById("buttonSend").disabled = false;
+	changeLoginStatus(true);
     };
 }
 
-//window.onload = init();
+//loading function register
 window.addEventListener("DOMContentLoaded", init, false);
 window.addEventListener("beforeunload", closeWebSocket, false);

@@ -9,28 +9,30 @@
 </div>
 <div id="chatarea">
   <div id="loginarea">
-    ルーム選択
+    <span id="errmsg"></span>
     <div id="roomchoice">
-      <INPUT TYPE="radio" name="room" value="create">
-      <INPUT TYPE="text" id="newroom" size="20" maxlength="15" value="">
-      <INPUT TYPE="radio" name="room" value="login">
+      ルーム選択
+      <input type="radio" name="room" value="create">
+      <input type="text" id="newroom" size="20" maxlength="15" value="">
+      <input type="radio" name="room" value="login">
       <select id="selectroom">
 	<%= roomSel %>
       </select>
     </div>
     <div id="roompass">
       ルームパスワード
-      <INPUT TYPE="password" id="roompwd" size="20" value="">
+      <input type="password" id="roompwd" size="20" value="">
+      <input type="button" id="roomlogin" value="入室">
+      <input type="button" id="roomlogout" value="退室">
     </div>
-    
   </div>
   <div id="inputarea">
     送信メッセージ:
-    <INPUT TYPE="text"   id="message"  size="50" value="">
-    <INPUT TYPE="button" id="buttonSend"  VALUE="送信">
-    <INPUT TYPE="hidden" id="login" value="<%= login %>">
-    <INPUT TYPE="hidden" id="userhash" value="<%= userhash %>">
-    <INPUT TYPE="hidden" id="username" value="<%= username %>">
+    <input type="text"   id="message"  size="50" value="">
+    <input type="button" id="buttonSend"  value="送信">
+    <input type="hidden" id="login" value="<%= login %>">
+    <input type="hidden" id="userhash" value="<%= userhash %>">
+    <input type="hidden" id="username" value="<%= username %>">
   </div>
   <div id="reciveArea">
     受信データ

@@ -3,6 +3,7 @@
 require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
 require_relative '../model/ChatLog'
+require_relative '../model/ChatRoom'
 require 'erb'
 require 'pathname'
 
@@ -31,12 +32,19 @@ class MainController
     end
 
     # 既存ルーム一覧
-    # TODO: ルームモデル呼び出し
-    roomSel = <<-SEL
-      <option value="test1">テスト１</option>
-      <option value="test2">テスト２</option>
-      <option value="test3">テスト３</option>
-    SEL
+    roomList,iserr = ChatRoom.getListRoom
+    roomSel = ""
+    if iserr.nil?
+      roomList.each do |elm|
+        tmpid = elm[:rid].to_s
+        tmpnm = elm[:rname].to_s
+        roomSel += <<-SEL
+          <option value="#{tmpid}">#{tmpnm}</option>
+        SEL
+      end
+    else
+      roomSel = "<option value=\"0\">リスト取得異常</option>"
+    end
 
     form = Pathname("view/Main.html.erb").read(:encoding => Encoding::UTF_8)
     return (ERB.new(form).result(binding)), false, ""
