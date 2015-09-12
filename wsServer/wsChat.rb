@@ -6,6 +6,7 @@ require 'uri'
 require_relative '../util/HtmlUtil'
 require_relative '../model/CgiUser'
 require_relative '../model/ChatLog'
+require_relative '../model/ChatRoom'
 
 Process.daemon(true, true)
 
@@ -26,9 +27,9 @@ module ChatModule
   def sendBroadcast(msg)
     return if msg.empty?
     sendmsg = "[" + @uname + "](" + getDateText + ") " + msg
-    @@connected_clients.each_value { |c| c.send(sendmsg) }
+    @@connected_clients[@roomid].each_value { |c| c.send(sendmsg) }
     outputLog sendmsg
-    isSucc, errmsg = ChatLog.insertLog(@loginName, msg)
+    isSucc, errmsg = ChatLog.insertLog(@loginName, msg, @roomid)
     outputLog errmsg unless isSucc
   end
 
@@ -37,17 +38,33 @@ module ChatModule
     retval = false
     retmsg = nil
     if CgiUser.checkOnetimeHash(login,userhash)
-      if @@connected_clients.has_key?(login) == false
-        # ChatRoom.createRoom if isnewroom
-        # ChatRoom.loginRoom unless isnewroom
+      tmpretval = false
+      roomid = nil
+      tmpretval,retmsg,roomid = ChatRoom.createRoom(roomname, roompwd,
+                                                    login) if isnewroom
+      roomid = roomname unless isnewroom
+      if !isnewroom or (isnewroom and tmpretval)
+        tmpretval,retmsg = ChatRoom.loginRoom(roomid, roompwd)
 
-        @loginName = login
-        @uname, tmpIsAdm = CgiUser.getUser(login)
-        @@connected_clients[@loginName] = self
-        outputLog "Login name is #{@loginName}"
-        retval = true
+        if tmpretval
+          @roomid = roomid
+          @@connected_clients[@roomid] = Hash.new unless @@connected_clients.has_key?(roomid)
+
+          if @@connected_clients[@roomid].has_key?(login) == false
+            @loginName = login
+            @uname, tmpIsAdm = CgiUser.getUser(login)
+            
+            (@@connected_clients[@roomid])[@loginName] = self
+            outputLog "Login name is #{@loginName}"
+            retval = true
+          else
+            retmsg = "同IDで既にログインしている人がいます。"
+          end
+        else
+          retmsg = "指定したルームに入室できません(" + retmsg + ")"
+        end
       else
-        retmsg = "同IDで既にログインしている人がいます。"
+        retmsg = "ルームの作成に失敗しました(" + retmsg + ")"
       end
     else
       retmsg = "ワンタイムパスが一致しません。正しいURLからログインしてください。"
@@ -60,7 +77,7 @@ module ChatModule
     if @loginName && @loginName.empty? == false
       msg = "[#{@uname}] is logout."
       outputLog msg
-      @@connected_clients.delete(@loginName)
+      @@connected_clients[@roomid].delete(@loginName)
       sendBroadcast(msg);
     end
     outputLog ("WebSocket closed(" + (@loginName.nil? ? "":@loginName) + ")")
@@ -103,7 +120,7 @@ EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
   }
   
   ws.onerror{ |e|
+    ws.outputLog "Error: #{e.message} / " + e.backtrace.inspect
     ws.logout
-    outputLog "Error: #{e.message}"
   }
 }

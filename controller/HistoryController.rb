@@ -27,6 +27,8 @@ class HistoryController
       logArr.each do |elm|
           tmpStr = "<li>"
         if elm[:err] == ""
+          tmpStr += HtmlUtil.esc(elm[:rname].to_s) +
+            " / " unless (elm[:rname].to_s).empty?
           tmpStr += "[" + HtmlUtil.esc(elm[:name].to_s) + "]"
           tmpStr += " (" +
             HtmlUtil.esc(HtmlUtil.fmtDateTime(elm[:sentDate])) + ") "

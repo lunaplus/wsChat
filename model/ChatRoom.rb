@@ -29,6 +29,7 @@ class ChatRoom < ModelMaster
   end
 
   def self.createRoom(name, password, uid)
+    rid = nil
     retval = false
     reterr = nil
     begin
@@ -63,6 +64,16 @@ class ChatRoom < ModelMaster
                    values(#{val})
           SQL
           mysqlClient.query(queryStr)
+
+          queryStr = <<-SQL
+            select id from chatRooms
+             where rname = '#{nameEsc}' and password = '#{pwdEsc}'
+                   and uid = '#{uidEsc}'
+          SQL
+          rsltset = mysqlClient.query(queryStr)
+          rsltset.each do |row|
+            rid = row["id"].to_s
+          end
           retval = true
         end
       end
@@ -70,7 +81,7 @@ class ChatRoom < ModelMaster
       retval = false
       reterr = e.message
     end
-    return retval, reterr
+    return retval, reterr, rid
   end
 
   def self.updateRoom(rid, rname, password, uid)
