@@ -30,7 +30,7 @@ module ChatModule
     @@connected_clients[@roomid].each_value { |c| c.send(sendmsg) }
     outputLog sendmsg
     isSucc, errmsg = ChatLog.insertLog(@loginName, msg, @roomid)
-    outputLog errmsg unless isSucc
+    outputLog errmsg unless isSucc and !(errmsg.nil?)
   end
 
   # ログイン処理

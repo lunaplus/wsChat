@@ -3,6 +3,7 @@
 require 'date'
 require 'digest/sha2'
 require 'cgi'
+require_relative '../model/ChatRoom'
 
 class HtmlUtil
   LOGINID = "loginid"
@@ -115,6 +116,25 @@ class HtmlUtil
 
   def self.fmtTime datetime
     return datetime.strftime("%H:%M:%S")
+  end
+
+  def self.getRoomSel (rid = nil)
+    roomList,iserr = ChatRoom.getListRoom
+    roomSel = ""
+    if iserr.nil?
+      roomList.each do |elm|
+        tmpid = elm[:rid].to_s
+        tmpnm = elm[:rname].to_s
+        roomSel += <<-SEL
+          <option value="#{tmpid}"
+        SEL
+        roomSel += " selected " if !(rid.nil?) and rid == tmpid
+        roomSel += ">#{tmpnm}</option>"
+      end
+    else
+      roomSel = "<option value=\"0\">リスト取得異常</option>"
+    end
+    return roomSel, iserr
   end
 
   def self.parseDateTime date

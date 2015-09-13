@@ -4,7 +4,22 @@
 <div id="mainlink">
   <a href="<%= mainUrl %>">メイン画面へ</a>
 </div>
-<% if strErr == "" %>
+<div id="roomarea">
+  <form method="get" action="<%= formaction %>">
+    <select name="selectroom" id="selectroom">
+      <%= roomSel %>
+    </select>
+    <input type="hidden" name="prevroom" id="prevroom" value="<%= rprev %>">
+    <input type="password" name="roompass" id="roompass" value="">
+    <input type="submit" name="roomlogsearch" id="roomlogsearch" value="検索">
+  </form>
+  <%= iserr unless iserr.nil? %>
+</div>
+<% if !(strErr.nil?) %>
+<div id="errarea">
+  <%= strErr %>
+</div>
+<% elsif !(rid.empty?) %>
 <div id="inputarea">
   <div id="prevlink">
   <% if existPrev %>
@@ -22,9 +37,5 @@
 </div>
 <div id="logarea">
   <%= logStr %>
-</div>
-<% else %>
-<div id="errarea">
-  <%= strErr %>
 </div>
 <% end %>

@@ -26,7 +26,6 @@ function pressEnter(){
 
 function closeWebSocket(){
     ws.close();
-    location.reload();
 }
 
 function selectRadioRoom(){
@@ -122,6 +121,7 @@ function openWebSocket() {
     ws.onclose = function() {
 	reciveDataSpace("socket closed");
 	changeLoginStatus(false);
+	location.reload();
     };
     ws.onopen = function() {
         reciveDataSpace("connected...");

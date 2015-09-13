@@ -17,7 +17,7 @@ class ChatLog < ModelMaster
                    '#{ridEscaped}' )
       SQL
       mysqlClient.query(queryStr)
-      return true, ""
+      return true, nil
     rescue Mysql2::Error => e
       return false, e.message
     end
@@ -25,7 +25,7 @@ class ChatLog < ModelMaster
 
   def self.getLogCounts(rid = nil)
     retval = 0
-    retErr = ""
+    retErr = nil
     begin
       mysqlClient = getMysqlClient
       ridEsc = mysqlClient.escape(rid) unless rid.nil?
