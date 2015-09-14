@@ -4,7 +4,8 @@ var ws;
 function reciveDataSpace(string) {
     var element = document.getElementById("reciveDataSpace");
     var p = document.createElement("li");
-    p.appendChild(document.createTextNode(string));
+    p.appendChild(document.createTextNode(string.replace(/\r?\n/g, "<br>")));
+    //p.innerHtml(string.replace(/\r?\n/g, "<br>"));
     element.insertBefore(p, element.firstChild);
 }
 
@@ -20,7 +21,10 @@ function sendMessage(){
 
 function pressEnter(){
     if (event.keyCode == 13){
-	sendMessage();
+	if (event.shiftKey){
+	    sendMessage();
+	    return false;
+	}
     }
 }
 
