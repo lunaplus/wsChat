@@ -4,8 +4,8 @@ var ws;
 function reciveDataSpace(string) {
     var element = document.getElementById("reciveDataSpace");
     var p = document.createElement("li");
-    p.appendChild(document.createTextNode(string.replace(/\r?\n/g, "<br>")));
-    //p.innerHtml(string.replace(/\r?\n/g, "<br>"));
+    //p.appendChild(document.createTextNode(string.replace(/\r?\n/g, "<br>")));
+    p.innerHTML = string.replace(/\r?\n/g, "<br>");
     element.insertBefore(p, element.firstChild);
 }
 

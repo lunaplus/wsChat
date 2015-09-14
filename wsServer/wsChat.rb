@@ -26,7 +26,7 @@ module ChatModule
   # 接続ユーザー全員にメッセージを送る
   def sendBroadcast(msg)
     return if msg.empty?
-    sendmsg = "[" + @uname + "](" + getDateText + ") " + msg
+    sendmsg = HtmlUtil.esc("[" + @uname + "](" + getDateText + ") " + msg)
     @@connected_clients[@roomid].each_value { |c| c.send(sendmsg) }
     outputLog sendmsg
     isSucc, errmsg = ChatLog.insertLog(@loginName, msg, @roomid)
