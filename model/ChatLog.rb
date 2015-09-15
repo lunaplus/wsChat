@@ -20,6 +20,8 @@ class ChatLog < ModelMaster
       return true, nil
     rescue Mysql2::Error => e
       return false, e.message
+    ensure
+      mysqlClient.close
     end
   end
 
@@ -40,6 +42,8 @@ class ChatLog < ModelMaster
       end
     rescue Mysql2::Error => e
       retErr = e.message
+    ensure
+      mysqlClient.close
     end
     return retval, retErr
   end
@@ -83,6 +87,8 @@ class ChatLog < ModelMaster
       err = Hash.new
       err[:err] = e.message
       retval.unshift(err)
+    ensure
+      mysqlClient.close
     end
     return retval
   end

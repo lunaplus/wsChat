@@ -61,10 +61,12 @@ module ChatModule
             retmsg = "同IDで既にログインしている人がいます。"
           end
         else
-          retmsg = "指定したルームに入室できません(" + retmsg + ")"
+          retmsg = "指定したルームに入室できません(" + retmsg + ")" unless retmsg.nil?
+          retmsg = "指定したルームに入室できません" if retmsg.nil?
         end
       else
-        retmsg = "ルームの作成に失敗しました(" + retmsg + ")"
+        retmsg = "ルームの作成に失敗しました(" + retmsg + ")" unless retmsg.nil?
+        retmsg = "ルームの作成に失敗しました" if retmsg.nil?
       end
     else
       retmsg = "ワンタイムパスが一致しません。正しいURLからログインしてください。"
@@ -103,11 +105,28 @@ EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
     # login check
     isLoginComplete, msg = ws.login(loginid,userhash,username,isnewroom,
                                     roomname,roompwd)
-    msg = "Welcome!" if isLoginComplete
-
-    ws.send(msg)
-    ws.sendBroadcast("Welcome [#{username}] !") if isLoginComplete
-    ws.close unless isLoginComplete
+    if isLoginComplete
+      initViewLogs = 10
+      rid = nil
+      rid = roomname unless isnewroom
+      histArr = ChatLog.getLogs(1,initViewLogs, rid)
+      histArr.reverse_each do |elm|
+        if elm[:err] != ""
+          histHtml = HtmlUtil.esc(elm[:err])
+        else
+          histHtml = ""
+          histHtml += "[" + HtmlUtil.esc(elm[:name].to_s) + "]"
+          histHtml += "(" + HtmlUtil.fmtDateTime(elm[:sentDate]) + ")"
+          histHtml += HtmlUtil.esc(elm[:message].to_s)
+        end
+        ws.send(histHtml)
+      end
+      ws.sendBroadcast("Welcome [#{username}] !")
+    else
+      ws.outputLog msg
+      ws.send msg
+      ws.close
+    end
   }
 
   ws.onmessage { |msg|

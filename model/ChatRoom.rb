@@ -24,6 +24,8 @@ class ChatRoom < ModelMaster
     rescue Mysql2::Error => e
       retval = nil
       reterr = e.message
+    ensure
+      mysqlClient.close
     end
     return retval, reterr
   end
@@ -65,11 +67,11 @@ class ChatRoom < ModelMaster
           SQL
           mysqlClient.query(queryStr)
 
-          queryStr = <<-SQL
-            select id from chatRooms
-             where rname = '#{nameEsc}' and password = '#{pwdEsc}'
-                   and uid = '#{uidEsc}'
-          SQL
+          queryStr = " select id from chatRooms where "
+          queryStr += " rname = '#{nameEsc}' "
+          queryStr += " and password = '#{pwdEsc}' " unless pwd == ""
+          queryStr += " and uid = '#{uidEsc}' "
+
           rsltset = mysqlClient.query(queryStr)
           rsltset.each do |row|
             rid = row["id"].to_s
@@ -80,6 +82,8 @@ class ChatRoom < ModelMaster
     rescue Mysql2::Error => e
       retval = false
       reterr = e.message
+    ensure
+      mysqlClient.close
     end
     return retval, reterr, rid
   end
@@ -111,6 +115,8 @@ class ChatRoom < ModelMaster
     rescue Mysql2::Error => e
       retval = false
       reterr = e.message
+    ensure
+      mysqlClient.close
     end
     return retval, reterr
   end
@@ -138,6 +144,8 @@ class ChatRoom < ModelMaster
     rescue Mysql2::Error => e
       retval = false
       reterr = e.message
+    ensure
+      mysqlClient.close
     end
     return retval, reterr
   end

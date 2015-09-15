@@ -28,8 +28,8 @@
   </div>
   <div id="inputarea">
     送信メッセージ:
-    <!-- input type="text"   id="message"  size="50" value="" -->
-    <textarea id="message"></textarea>
+    <textarea id="message" placeholder="Shift+Enterで送信"
+	      rows="5" cols="60"></textarea>
     <input type="button" id="buttonSend"  value="送信">
     <input type="hidden" id="login" value="<%= login %>">
     <input type="hidden" id="userhash" value="<%= userhash %>">

@@ -30,6 +30,8 @@ class CgiUser < ModelMaster
       return true
     rescue Mysql2::Error => e
       return false
+    ensure
+      mysqlClient.close
     end
   end
 
@@ -54,6 +56,8 @@ class CgiUser < ModelMaster
       return retName,retIsAdm
     rescue Mysql2::Error => e
       return "",false
+    ensure
+      mysqlClient.close
     end
   end
 
@@ -80,6 +84,8 @@ class CgiUser < ModelMaster
       return isAuth,retUid,retName,retIsAdm
     rescue Mysql2::Error => e
       return false,"","",false
+    ensure
+      mysqlClient.close
     end
   end
 
@@ -96,6 +102,8 @@ class CgiUser < ModelMaster
       mysqlClient.query(queryStr)
     rescue Mysql2::Error => e
       return ""
+    ensure
+      mysqlClient.close
     end
     return oth
   end
@@ -122,6 +130,8 @@ class CgiUser < ModelMaster
       end
     rescue Mysql2::Error => e
       retval = false
+    ensure
+      mysqlClient.close
     end
     return retval
   end
