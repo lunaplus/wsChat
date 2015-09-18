@@ -5,7 +5,13 @@
   </div>
 </div>
 <div id="menuarea">
-  <a href="<%= histUrl %>">過去ログ画面へ</a>
+  <ul id="normal" class="dropmenu">
+    <li><a href="#">メニュー▼</a>
+      <ul>
+	<%= menuList %>
+      </ul>
+    </li>
+  </ul>
 </div>
 <div id="chatarea">
   <div id="loginarea">
@@ -37,9 +43,7 @@
   </div>
   <div id="reciveArea">
     受信データ
-    <ul id="reciveDataSpace">
-      <%= histHtml %>
-    </ul>
+    <ul id="reciveDataSpace"></ul>
   </div>
 </div>
 <script src='<%= HtmlUtil::URLROOT + "/js/" %>chat.js'></script>

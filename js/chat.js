@@ -32,11 +32,6 @@ function closeWebSocket(){
     ws.close();
 }
 
-function closeWebSocketAndReload(){
-    ws.close();
-    location.reload();
-}
-
 function selectRadioRoom(){
     modifyRoomItemsStatus(this.value=="create")
 }
@@ -71,7 +66,7 @@ function init() {
     document.getElementById("buttonSend").onclick = sendMessage;
     document.getElementById("message").onkeydown = pressEnter;
     document.getElementById("roomlogin").onclick = openWebSocket;
-    document.getElementById("roomlogout").onclick = closeWebSocketAndReload;
+    document.getElementById("roomlogout").onclick = closeWebSocket;
     var rdoroom = document.getElementsByName("room")
     for(var i=0; i<rdoroom.length; i++){
 	rdoroom[i].onclick = selectRadioRoom;
@@ -130,7 +125,7 @@ function openWebSocket() {
     ws.onclose = function() {
 	reciveDataSpace("socket closed");
 	changeLoginStatus(false);
-	//location.reload();
+	location.reload();
     };
     ws.onopen = function() {
         reciveDataSpace("connected...");

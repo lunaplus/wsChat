@@ -13,23 +13,8 @@ class MainController
     username = session[HtmlUtil::LOGINNAME]
     showname = username + "(" + login + ")"
     userhash = CgiUser.getOnetimeHash(login)
-    histUrl = HtmlUtil.getHistoryUrl
 
-    # 過去ログ表示
-    initViewLogs = 10
-    histArr = ChatLog.getLogs(0, initViewLogs)
-    histHtml = ""
-    histArr.each do |elm|
-      if elm[:err] != ""
-        histHtml = HtmlUtil.esc(elm[:err])
-        break
-      end
-      histHtml += "<li>"
-      histHtml += "[" + HtmlUtil.esc(elm[:name].to_s) + "]"
-      histHtml += "(" + HtmlUtil.fmtDateTime(elm[:sentDate]) + ")"
-      histHtml += HtmlUtil.esc(elm[:message].to_s)
-      histHtml += "</li>"
-    end
+    menuList = HtmlUtil.getMenuList(HtmlUtil.getMainUrl)
 
     # 既存ルーム一覧
     roomSel, iserr = HtmlUtil.getRoomSel

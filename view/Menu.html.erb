@@ -1,4 +1,16 @@
-<p>
-  <h2>メニュー画面</h2>
-  this is menu!
-</p>
+<div id="titles">
+  <h2><%= @viewName %></h2>
+</div>
+<div id="menuarea">
+  <ul id="normal" class="dropmenu">
+    <li><a href="#">メニュー▼</a>
+      <ul>
+	<%= @menuList %>
+      </ul>
+    </li>
+  </ul>
+</div>
+<div id="contentarea">
+  <%= @contents %>
+</div>
+

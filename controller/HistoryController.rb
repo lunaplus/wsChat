@@ -19,12 +19,12 @@ class HistoryController
     session["roompass"] = nil
 
     formaction = HtmlUtil.getHistoryUrl
-    mainUrl = HtmlUtil.getMainUrl
     roomSel,iserr = HtmlUtil.getRoomSel rid
     rprev = 0
 
-    strErr = ""
+    menuList = HtmlUtil.getMenuList(HtmlUtil.getHistoryUrl)
 
+    strErr = ""
     if !(iserr.nil?) or rid.empty?
       # getRoomSelでエラーが発生したか、ルーム選択がされていない場合
       strErr = iserr unless iserr.nil?

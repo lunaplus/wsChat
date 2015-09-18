@@ -2,7 +2,13 @@
   <h2>過去ログ画面</h2>
 </div>
 <div id="mainlink">
-  <a href="<%= mainUrl %>">メイン画面へ</a>
+  <ul id="normal" class="dropmenu">
+    <li><a href="#">メニュー▼</a>
+      <ul>
+	<%= menuList %>
+      </ul>
+    </li>
+  </ul>
 </div>
 <div id="roomarea">
   <form method="post" action="<%= formaction %>">

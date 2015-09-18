@@ -74,8 +74,8 @@ class HtmlUtil
     urlRoot += ENV['HTTP_HOST'] + URLROOT
   end
 
-  def self.getMenuUrl
-    return (createUrl MenuCtrlName,"index")
+  def self.getMenuUrl(action = "index")
+    return (createUrl MenuCtrlName,action)
   end
 
   def self.getMainUrl
@@ -137,6 +137,26 @@ class HtmlUtil
     return roomSel, iserr
   end
 
+  def self.getMenuList(now = nil)
+    mainUrl = HtmlUtil.getMainUrl
+    histUrl = HtmlUtil.getHistoryUrl
+    personMgmtUrl = HtmlUtil.getMenuUrl("person")
+    roomMgmtUrl = HtmlUtil.getMenuUrl("room")
+
+    mainUrl = "#" if HtmlUtil.getMainUrl == now
+    histUrl = "#" if HtmlUtil.getHistoryUrl == now
+    personMgmtUrl = "#" if HtmlUtil.getMenuUrl("person") == now
+    roomMgmtUrl = "#" if HtmlUtil.getMenuUrl("room") == now
+
+    menuList = <<-MENU
+        <li><a href="#{mainUrl}">メイン画面へ</a></li>
+	<li><a href="#{histUrl}">過去ログ画面へ</a></li>
+	<li><a href="#{personMgmtUrl}">自分の管理</a></li>
+	<li><a href="#{roomMgmtUrl}">ルームの管理</a></li>
+    MENU
+    return menuList
+  end
+
   def self.parseDateTime date
     return (date+Rational(9,24))
     # return ((DateTime.strptime(date, "%Y-%m-%d %H:%M:%S"))+Rational(9,24))
@@ -145,10 +165,9 @@ class HtmlUtil
   def self.parseDate str
     return Date.parse(str, "%Y-%m-%d")
   end
-end
 
 ## ===================================================================
-# no use
+=begin # no use
   def self.getJavascriptTags
     jquerypath = getUrlRoot + "/js/jquery-2.1.1.min.js"
     jspath = getUrlRoot + "/js/common.js"
@@ -215,6 +234,8 @@ end
   def self.createDateTime y,m,d,h=0,mi=0,s=0
     return DateTime.new(y,m,d,h,mi,s,Rational(9,24))
   end
+=end
+end
 
 class Integer
   def to_currency()
