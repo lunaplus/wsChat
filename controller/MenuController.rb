@@ -6,6 +6,8 @@ require 'erb'
 require 'pathname'
 
 class MenuController
+  PERSONERR = "person.err"
+
   def index session,args
     @viewName = "メニュー画面" if @viewName.nil?
     @menuList = HtmlUtil.getMenuList(HtmlUtil.getMenuUrl) if @menuList.nil?
@@ -25,6 +27,9 @@ class MenuController
     uid = session[HtmlUtil::LOGINID]
     dispName = session[HtmlUtil::LOGINNAME]
 
+    personerr = session[PERSONERR]
+    session[PERSONERR] = nil
+
     @contents = ERB.new(Pathname("view/Menu_person.html.erb").
       read(:encoding => Encoding::UTF_8)).result(binding)
 
@@ -36,7 +41,7 @@ class MenuController
     uid = session[HtmlUtil::LOGINID]
     dispnmcur = session[HtmlUtil::LOGINNAME]
 
-    newpwdchk = args[0]["pwdchk"][0]
+    newpwdchk = args[0]["pwdcheck"][0]
     newpwd = args[0]["newpwd"][0]
     newpwdcf = args[0]["cfnewpwd"][0]
 
@@ -45,32 +50,57 @@ class MenuController
 
     curpwd = args[0]["curpwd"][0]
 
-    checked = true
+    checked = false # if check OK, true
     errmsg = Array.new
 
     ## user auth check with uid, password
-    if !(CgiUser.authUser(uid, curpwd))
-      checked = false
-      errmsg.push("現在のパスワードが間違っています。")
-    end
+    isAuth,retUid,retName,retIsAdm = CgiUser.authUser(uid, curpwd)
+    errmsg.push("現在のパスワードが間違っています。") unless isAuth
+
+    errmsg.push("更新する項目に" +
+                "チェックを入れてください。") if
+      newpwdchk != "on" and dispnmchk != "on"
+
     ## check newpwd & newpwdcf & curpwd
-    if newpwdchk=="checked"
-      if newpwd == curpwd
-        errmsg.push("新しいパスワードは現在のパスワードと異なるものを設定してください")
-      end
-      if newpwd != newpwdcf
-        errmsg.push("新パスワードと確認用パスワードが異なります。")
-      end
+    if newpwdchk=="on"
+      errmsg.push("新しいパスワードは現在のパスワードと" +
+                  "異なるものを設定してください") if newpwd == curpwd
+      errmsg.push("新パスワードと確認用パスワードが" +
+                  "異なります。") if newpwd != newpwdcf
     end
+
     ## check dispnm duplication
-    if dispnmchk == "checked"
-      
+    if dispnmchk == "on"
+      chkDup = CgiUser.checkDuplicateName(dispnm)
+      errmsg.push chkDup[:err] unless chkDup[:err].empty?
+      errmsg.push "同じ表示名が既に登録されています。(" +
+        dispnm + ")" unless chkDup[:isUnique]
     end
-    # update database
 
-    # redirect to person
-    ## if something error, display error(instance variable) and call person
-
+    if errmsg.count == 0
+      # update database
+      issucc,strerr =
+        CgiUser.updateUser(uid,"",
+                           (dispnmchk=="on" ? dispnm : ""),
+                           (newpwdchk=="on" ? newpwd : "") )
+      unless issucc
+        session[PERSONERR] = "<ul><li>" + strerr + "</li></ul>"
+      else
+        session[PERSONERR] = "<ul><li>正常に更新されました。</li><ul>"
+        session[HtmlUtil::LOGINNAME] = dispnm if dispnmchk=="on"
+      end
+    else
+      # redirect to person
+      personerr = "<ul>"
+      errmsg.each do |elm|
+        personerr += "<li>"
+        personerr += elm
+        personerr += "</li>"
+      end
+      personerr += "</ul>"
+      session[PERSONERR] = personerr
+    end
+    return "",true,(HtmlUtil.getMenuUrl("person"))
   end
 
   def room session,args

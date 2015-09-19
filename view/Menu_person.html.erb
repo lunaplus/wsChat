@@ -1,4 +1,9 @@
 <div id="personContents">
+  <% unless personerr.nil? %>
+  <div id="personerr">
+    <%= personerr %>
+  </div>
+  <% end %>
   <form method="post" action="<%= formaction %>">
     <div id="uidarea">
       ユーザID : <%= uid %>

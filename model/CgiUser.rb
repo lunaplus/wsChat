@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # encording: utf-8
 # cgiUsers model
 require_relative '../util/HtmlUtil'
@@ -10,7 +11,7 @@ class CgiUser < ModelMaster
   def self.updateUser(curuid,upuid="",upname="",uppass="")
     begin
       if (upuid == "" and upname == "" and uppass == "")
-        return false
+        return false, "UID, name, passいずれかに更新値を入力してください。"
       end
       mysqlClient = getMysqlClient
       curuidEscaped = mysqlClient.escape(curuid)
@@ -27,11 +28,11 @@ class CgiUser < ModelMaster
       queryStr += " where uid = '#{curuidEscaped}' "
 
       mysqlClient.query(queryStr)
-      return true
+      return true, ""
     rescue Mysql2::Error => e
-      return false
+      return false, e.message
     ensure
-      mysqlClient.close
+      mysqlClient.close unless mysqlClient.nil?
     end
   end
 
@@ -134,5 +135,26 @@ class CgiUser < ModelMaster
       mysqlClient.close
     end
     return retval
+  end
+
+  def self.checkDuplicateName(name)
+    retval = false # if not exist duplicat name, return true
+    begin
+      mysqlClient = getMysqlClient
+      nameEsc = mysqlClient.escape(name)
+      queryStr = <<-SQL
+        select count(*) as counts from cgiUsers
+         where name = '#{nameEsc}'
+      SQL
+      rsltSet = mysqlClient.query(queryStr)
+      rsltSet.each do |row|
+        retval = (row["counts"] == 0)
+      end
+      return {:isUnique => retval, :err => ""}
+    rescue Mysql2::Error => e
+      return {:isUnique => retval, :err => e.message}
+    ensure
+      mysqlClient.close
+    end
   end
 end
