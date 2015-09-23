@@ -157,4 +157,27 @@ class CgiUser < ModelMaster
       mysqlClient.close
     end
   end
+
+  def self.getUserList
+    retval = Array.new
+    iserr = false
+    errstr = ""
+    begin
+      mysqlClient = getMysqlClient
+      queryStr = <<-SQL
+        select uid, name from cgiUsers
+         order by uid
+      SQL
+      rsltSet = mysqlClient.query(queryStr)
+      rsltSet.each do |row|
+        retval.push({:uid => row["uid"], :name => row["name"]})
+      end
+    rescue Mysql2::Error => e
+      iserr = true
+      errstr = e.message
+    ensure
+      mysqlClient.close
+    end
+    return {:ulist => retval, :iserr => iserr, :errstr => errstr}
+  end
 end

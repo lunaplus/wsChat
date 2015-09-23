@@ -1,3 +1,52 @@
 <div id="roomContents">
-  room!!!
+  <% unless roomerr.nil? %>
+  <div id="roomerr">
+    <%= roomerr %>
+  </div>
+  <% end %>
+  <form method="post" action="<%= formaction %>">
+    <div id="ridarea">
+      ルーム名 :
+      <select id="selectroom" name="selectroom">
+	<%= roomSel %>
+      </select>
+    </div>
+    <div id="updroomarea">
+      更新 : <input type="radio" name="room" value="update">
+      <div>
+	<input type="checkbox" id="chkrname" name="chkrname">
+	ルーム名 : <input type="text" id="rname" name="rname"
+			  value="<%= rname %>">
+      </div><div>
+	<input type="checkbox" id="chkrown" name="chkrown">
+	所有者 :
+	<select id="selectowner" name="selectowner">
+	  <%= ownerSel %>
+	</select>
+      </div><div>
+	<input type="checkbox" id="chknewpwd" name="chknewpwd">
+	新パスワード:
+	<input type="password" id="newpwd" name="newpwd">
+      </div><div><div>
+	  確認用:
+	  <input type="password" id="cfnewpwd" name="cfnewpwd">
+      </div></div>
+    </div>
+    <div id="delroomarea">
+      削除 : <input type="radio" name="room" value="delete">
+      <div>
+	チャットログも削除する : 
+	<input type="checkbox" name="chkdellog" id="chkdellog">
+      </div>
+    </div>
+    <div id="submitarea">
+      <div>
+	現在のパスワード:
+	<input type="password" name="curpwd" id="curpwd">
+      </div>
+      <input type="hidden" name="uid" id="uid" value="<%= uid %>">
+      <input type="submit" name="submitroom" id="submitroom" value="更新">
+    </div>
+  </form>
 </div>
+<script src='<%= HtmlUtil::URLROOT + "/js/" %>room.js'></script>

@@ -7,6 +7,7 @@ require 'pathname'
 
 class MenuController
   PERSONERR = "person.err"
+  ROOMERR = "room.err"
 
   def index session,args
     @viewName = "メニュー画面" if @viewName.nil?
@@ -106,13 +107,77 @@ class MenuController
   def room session,args
     @viewName = "ルームの管理画面"
     mainUrl = HtmlUtil.getMainUrl
-
     @menuList = HtmlUtil.getMenuList(HtmlUtil.getMenuUrl("room"))
+
+    formaction = HtmlUtil.getMenuUrl("updateroom")
+
+    rid = args[0]["rid"][0]
+    uid = session[HtmlUtil::LOGINID]
+    roomSel,iserr = HtmlUtil.getRoomSel(rid,uid)
+
+    retrname,iserr2 = ((!rid.nil? && !rid.empty?) ? ChatRoom.getRoomname(rid)
+                      : ["",false])
+    rname = (iserr2 ? "" : retrname)
+
+    ownerSel = HtmlUtil.getUserSel(uid)
+
+    roomerr = session[ROOMERR]
+    session[ROOMERR] = nil
 
     @contents = ERB.new(Pathname("view/Menu_room.html.erb").
       read(:encoding => Encoding::UTF_8)).result(binding)
 
     index session, args
+  end
+
+  def updateroom session,args
+    #############################
+    session[ROOMERR] = "<ul><li>!!! NOW IMPLEMENTING !!!</li></ul>"
+    return "", true, HtmlUtil.getMenuUrl("room")
+    #############################
+
+    # input check
+    uid = session[HtmlUtil::LOGINID]
+
+    rid = args[0]["selectroom"][0]
+    isRdoUpd = args[0]["room"][0] # "update" or "delete"
+
+    chkRoomName = args[0]["chkrname"][0]
+    txtRoomName = args[0]["rname"][0]
+    chkRoomOwn = args[0]["chkrown"][0]
+    txtRoomOwn = args[0]["selectowner"][0]
+    chkNewPwd = args[0]["chknewpwd"][0]
+    txtNewPwd = args[0]["newpwd"][0]
+    txtConfirmNewPwd = args[0]["cfnewpwd"][0]
+
+    chkDelLog = args[0]["chkdellog"][0]
+
+    txtCurPwd = args[0]["curpwd"][0]
+
+    # return variables
+    isRedirect = false
+    redirectUri = HtmlUtil.getMenuUrl("room")
+
+    err = Array.new
+
+    # check login to room
+    loginRetval, loginReterr = ChatRoom.loginRoom(rid, txtCurPwd)
+
+    if isRdoUpd == "update"
+      # for update
+      ## check no change (in model)
+    elsif isRdoUpd == "delete"
+      # for delete
+      ## update room flg with/without delete logs (in model)
+    else
+      # error case (invalid radio button value)
+    end
+
+    if err.counts > 0
+      session[ROOMERR] = err.inspect # TODO: transform to HTML unorderd list
+    end
+
+    return "", isRedirect, redirectUri
   end
 
 end

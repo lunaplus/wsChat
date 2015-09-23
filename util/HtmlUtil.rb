@@ -118,23 +118,40 @@ class HtmlUtil
     return datetime.strftime("%H:%M:%S")
   end
 
-  def self.getRoomSel (rid = nil)
-    roomList,iserr = ChatRoom.getListRoom
+  def self.getRoomSel (rid = nil, uid = nil)
+    roomList,iserr = ChatRoom.getListRoom(uid)
     roomSel = ""
     if iserr.nil?
       roomList.each do |elm|
         tmpid = elm[:rid].to_s
         tmpnm = elm[:rname].to_s
-        roomSel += <<-SEL
-          <option value="#{tmpid}"
-        SEL
+        roomSel += "<option value=\"#{tmpid}\""
         roomSel += " selected " if !(rid.nil?) and rid == tmpid
         roomSel += ">#{tmpnm}</option>"
       end
     else
-      roomSel = "<option value=\"0\">リスト取得異常</option>"
+      roomSel = "<option value=\"0\">リスト取得異常(" +
+        iserr + ")</option>"
     end
     return roomSel, iserr
+  end
+
+  def self.getUserSel (uid = nil)
+    uHash = CgiUser.getUserList
+    userSel = ""
+    if uHash[:iserr]
+      userSel = "<option value=\"0\">リスト取得異常(" +
+        uHash[:errstr] + ")</option>"
+    else
+      uHash[:ulist].each do |elm|
+        tmpid = elm[:uid].to_s
+        tmpnm = elm[:name].to_s
+        userSel += "<option value=\"#{tmpid}\""
+        userSel += " selected " if !(uid.nil?) and uid == tmpid
+        userSel += ">#{tmpnm}</option>"
+      end
+    end
+    return userSel
   end
 
   def self.getMenuList(now = nil)

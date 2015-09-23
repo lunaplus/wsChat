@@ -5,15 +5,15 @@ require_relative '../util/HtmlUtil'
 require_relative './ModelMaster'
 
 class ChatRoom < ModelMaster
-  def self.getListRoom
+  def self.getListRoom (uid = nil)
     retval = Array.new
     reterr = nil
     begin
       mysqlClient = getMysqlClient
-      queryStr = <<-SQL
-        select id, rname from chatRooms
-         order by rname asc
-      SQL
+      uidEsc = mysqlClient.escape(uid) unless uid.nil?
+      queryStr = " select id, rname from chatRooms "
+      queryStr += " where uid = '#{uidEsc}' " unless uid.nil?
+      queryStr += " order by id asc "
       rsltset = mysqlClient.query(queryStr)
       rsltset.each do |row|
         tmp = Hash.new
@@ -88,11 +88,11 @@ class ChatRoom < ModelMaster
     return retval, reterr, rid
   end
 
-  def self.updateRoom(rid, rname, password, uid)
+  def self.updateRoom(rid, rname, curpwd, newpwd, uid)
     retval = false
     reterr = nil
     begin
-      pwd = (password.nil? ? "" : password)
+      pwd = (newpwd.nil? ? "" : newpwd)
       mysqlClient = getMysqlClient
       ridEsc = mysqlClient.escape(rid)
       nameEsc = mysqlClient.escape(rname)
@@ -150,4 +150,34 @@ class ChatRoom < ModelMaster
     return retval, reterr
   end
 
+  def self.getRoomname(rid)
+    retval = ""
+    iserr = false
+    if rid.nil? or rid.empty?
+      iserr = true
+      retval = "ridを指定してください。"
+    else
+      begin
+        mysqlClient = getMysqlClient
+        ridEsc = mysqlClient.escape(rid)
+        queryStr = <<-SQL
+          select rname from chatRooms
+           where id = '#{ridEsc}'
+        SQL
+        rsltSet = mysqlClient.query(queryStr)
+        rsltSet.each do |row|
+          retval = row["rname"].to_s
+        end
+      rescue Mysql2::Error => e
+        iserr = true
+        retval = e.message
+      ensure
+        mysqlClient.close
+      end
+    end
+    return retval, iserr
+  end
+
+  def self.deleteRoom(rid,pwd,flg)
+  end
 end
