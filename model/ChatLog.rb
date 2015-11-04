@@ -92,4 +92,27 @@ class ChatLog < ModelMaster
     end
     return retval
   end
+
+  def self.removeLogs(rid)
+    retval = false
+    reterr = nil
+    if rid.nil? || rid.empty?
+      reterr = "ルームIDを指定してください。"
+    else
+      begin
+        mysqlClient = getMysqlClient
+        ridEsc = mysqlClient.escape(rid)
+        queryStr = <<-SQL
+        delete from chatLogs where rid = '#{ridEsc}'
+      SQL
+        mysqlClient.query(queryStr)
+        retval = true
+      rescue Mysql::Error => e
+        reterr = e.message
+      ensure
+        mysqlClient.close
+      end
+    end
+    return retval, reterr
+  end
 end

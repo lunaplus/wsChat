@@ -83,8 +83,8 @@ function checkSubmit(){
 
     var errarr = [];
 
-    if(curpwd == "") //パスワードチェック
-	errarr.push('現在のパスワードを入力してください。\n');
+    //if(curpwd == "") //パスワードチェック
+    //    errarr.push('現在のパスワードを入力してください。\n');
 
     if(selval == "update"){ //更新時入力チェック
 	if(! (ischkrname || ischkrown || ischknewpwd)) //no change
@@ -100,8 +100,8 @@ function checkSubmit(){
 		errarr.push('新しいルーム所有者を選択してください。\n');
 	}
 	if(ischknewpwd){ // new password
-	    if(newpwd != "")
-		errarr.push('新パスワードを入力してください。\n');
+	    //if(newpwd == "")
+		//errarr.push('新パスワードを入力してください。\n');
 	    if(newpwd != cfnewpwd)
 		errarr.push('新パスワードが一致しません。\n');
 	    if((curpwd != "") && (newpwd == curpwd))

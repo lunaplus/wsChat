@@ -85,21 +85,17 @@ class MenuController
                            (dispnmchk=="on" ? dispnm : ""),
                            (newpwdchk=="on" ? newpwd : "") )
       unless issucc
-        session[PERSONERR] = "<ul><li>" + strerr + "</li></ul>"
+        # session[PERSONERR] = "<ul><li>" + strerr + "</li></ul>"
+        session[PERSONERR] = HtmlUtil.arrToHtmlList([strerr],false)
       else
-        session[PERSONERR] = "<ul><li>正常に更新されました。</li><ul>"
+        # session[PERSONERR] = "<ul><li>正常に更新されました。</li><ul>"
+        session[PERSONERR] =
+          HtmlUtil.arrToHtmlList(["正常に更新されました。"],false)
         session[HtmlUtil::LOGINNAME] = dispnm if dispnmchk=="on"
       end
     else
       # redirect to person
-      personerr = "<ul>"
-      errmsg.each do |elm|
-        personerr += "<li>"
-        personerr += elm
-        personerr += "</li>"
-      end
-      personerr += "</ul>"
-      session[PERSONERR] = personerr
+      session[PERSONERR] = HtmlUtil.arrToHtmlList(errmsg, false)
     end
     return "",true,(HtmlUtil.getMenuUrl("person"))
   end
@@ -113,7 +109,7 @@ class MenuController
 
     rid = args[0]["rid"][0]
     uid = session[HtmlUtil::LOGINID]
-    roomSel,iserr = HtmlUtil.getRoomSel(rid,uid)
+    roomSel,iserr = HtmlUtil.getRoomSel(rid,uid,true)
 
     retrname,iserr2 = ((!rid.nil? && !rid.empty?) ? ChatRoom.getRoomname(rid)
                       : ["",false])
@@ -131,10 +127,9 @@ class MenuController
   end
 
   def updateroom session,args
-    #############################
-    session[ROOMERR] = "<ul><li>!!! NOW IMPLEMENTING !!!</li></ul>"
-    return "", true, HtmlUtil.getMenuUrl("room")
-    #############################
+    # return variables
+    isRedirect = true
+    redirectUri = HtmlUtil.getMenuUrl("room")
 
     # input check
     uid = session[HtmlUtil::LOGINID]
@@ -145,7 +140,7 @@ class MenuController
     chkRoomName = args[0]["chkrname"][0]
     txtRoomName = args[0]["rname"][0]
     chkRoomOwn = args[0]["chkrown"][0]
-    txtRoomOwn = args[0]["selectowner"][0]
+    selRoomOwn = args[0]["selectowner"][0]
     chkNewPwd = args[0]["chknewpwd"][0]
     txtNewPwd = args[0]["newpwd"][0]
     txtConfirmNewPwd = args[0]["cfnewpwd"][0]
@@ -154,27 +149,45 @@ class MenuController
 
     txtCurPwd = args[0]["curpwd"][0]
 
-    # return variables
-    isRedirect = false
-    redirectUri = HtmlUtil.getMenuUrl("room")
-
     err = Array.new
 
     # check login to room
     loginRetval, loginReterr = ChatRoom.loginRoom(rid, txtCurPwd)
-
-    if isRdoUpd == "update"
-      # for update
-      ## check no change (in model)
-    elsif isRdoUpd == "delete"
-      # for delete
-      ## update room flg with/without delete logs (in model)
+    unless loginRetval
+      err.push("ルーム認証に失敗しました。")
+      err.push(loginReterr)
     else
-      # error case (invalid radio button value)
+      if isRdoUpd == "update"
+        # for update
+        argrname = (chkRoomName == "on" ? txtRoomName : nil)
+        argrown = (chkRoomOwn == "on" ? selRoomOwn : nil)
+        if chkNewPwd == "on" and txtNewPwd != txtConfirmNewPwd
+          err.push("新パスワードが一致しません。")
+        else
+          argpwd = (chkNewPwd == "on" ? txtNewPwd : nil)
+          updretval, updreterr =
+            ChatRoom.updateRoom(rid, argrname, txtCurPwd,
+                                argpwd, argrown)
+          err.push(updreterr) unless updretval
+        end
+      elsif isRdoUpd == "delete"
+        # for delete
+        delretval, delreterr =
+          ChatRoom.deleteRoom(rid, txtCurPwd, (chkDelLog=="on"))
+        err.push(delreterr) unless delretval
+      else
+        # error case (invalid radio button value)
+        err.push("ラジオボタンを選択してください。")
+      end
     end
 
-    if err.counts > 0
-      session[ROOMERR] = err.inspect # TODO: transform to HTML unorderd list
+    if err.count > 0
+      session[ROOMERR] = HtmlUtil.arrToHtmlList(err, false)
+    else
+      session[ROOMERR] =
+        HtmlUtil.arrToHtmlList(["正常に" +
+                                (isRdoUpd=="update" ? "更新" : "削除")+
+                                "されました。"], false)
     end
 
     return "", isRedirect, redirectUri

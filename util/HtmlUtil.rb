@@ -118,13 +118,14 @@ class HtmlUtil
     return datetime.strftime("%H:%M:%S")
   end
 
-  def self.getRoomSel (rid = nil, uid = nil)
-    roomList,iserr = ChatRoom.getListRoom(uid)
+  def self.getRoomSel (rid = nil, uid = nil, getRevoked = false)
+    roomList,iserr = ChatRoom.getListRoom(uid, getRevoked)
     roomSel = ""
     if iserr.nil?
       roomList.each do |elm|
         tmpid = elm[:rid].to_s
         tmpnm = elm[:rname].to_s
+        tmpnm += " (削除)" unless elm[:isr]=='0'
         roomSel += "<option value=\"#{tmpid}\""
         roomSel += " selected " if !(rid.nil?) and rid == tmpid
         roomSel += ">#{tmpnm}</option>"
@@ -172,6 +173,19 @@ class HtmlUtil
 	<li><a href="#{roomMgmtUrl}">ルームの管理</a></li>
     MENU
     return menuList
+  end
+
+  def self.arrToHtmlList(arr, isOdr)
+    retstr = (isOdr ? "<ol>" : "<ul>")
+    if arr.count == 0
+      retstr = "<li>リストアイテムが空です。</li>"
+    else
+      arr.each do |elm|
+        retstr += "<li>" + elm + "</li>" unless elm.nil?
+      end
+    end
+    retstr += (isOdr ? "</ol>" : "</ul>")
+    return retstr
   end
 
   def self.parseDateTime date
