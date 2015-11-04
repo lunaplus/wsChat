@@ -109,7 +109,7 @@ EM::WebSocket.start(:host => "localhost", :port => 23456) { |ws|
       initViewLogs = 10
       rid = nil
       rid = roomname unless isnewroom
-      histArr = ChatLog.getLogs(1,initViewLogs, rid)
+      histArr = ChatLog.getLogs(0,initViewLogs, rid)
       histArr.reverse_each do |elm|
         if elm[:err] != ""
           histHtml = HtmlUtil.esc(elm[:err])
