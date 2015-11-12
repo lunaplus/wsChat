@@ -78,3 +78,8 @@
 #delroomarea div{
     margin-left: 40px;
 }
+#reciveDataSpace li{
+    margin-bottom: 5px;
+    padding-left: 10em;
+    text-indent: -10em;
+}
